@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字接龙游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "SimHei", sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.5s ease;
+        }
+
+        .level-1 { background-color: #e3f2fd; }
+        .level-2 { background-color: #e8f5e9; }
+        .level-3 { background-color: #fff3e0; }
+        .level-4 { background-color: #fce4ec; }
+        .level-5 { background-color: #f3e5f5; }
+        .level-6 { background-color: #e8eaf6; }
+        .level-7 { background-color: #e0f7fa; }
+        .level-8 { background-color: #f1f8e9; }
+        .level-9 { background-color: #fffde7; }
+        .level-10 { background-color: #efebe9; }
+
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .timer {
+            color: #e74c3c;
+        }
+
+        .current-word {
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .word-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .word-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            letter-spacing: 5px;
+        }
+
+        .last-char {
+            color: #e74c3c;
+        }
+
+        .input-area {
+            margin: 20px 0;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        #user-input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+            text-align: center;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        #user-input.error {
+            border-color: #e74c3c;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 16px;
+            display: none;
+        }
+
+        .message.error {
+            background-color: #fdecea;
+            color: #e74c3c;
+            display: block;
+        }
+
+        .message.success {
+            background-color: #edf7ed;
+            color: #2ecc71;
+            display: block;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #submit-btn {
+            background-color: #3498db;
+            color: white;
+        }
+
+        #submit-btn:hover {
+            background-color: #2980b9;
+        }
+
+        #give-up-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        #give-up-btn:hover {
+            background-color: #c0392b;
+        }
+
+        #restart-btn {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        #restart-btn:hover {
+            background-color: #d68910;
+        }
+
+        .game-over {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .game-over h2 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        .game-over.success h2 {
+            color: #2ecc71;
+        }
+
+        .game-over p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .start-screen {
+            padding: 20px;
+        }
+
+        .start-screen h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .start-screen p {
+            color: #666;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .start-screen ul {
+            text-align: left;
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .start-screen li {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        #start-btn {
+            background-color: #2ecc71;
+            color: white;
+            margin-top: 20px;
+        }
+
+        #start-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="level-1">
+    <div class="container">
+        <!-- 开始界面 -->
+        <div id="start-screen" class="start-screen">
+            <h1>🎮 文字接龙游戏</h1>
+            <h2>游戏规则</h2>
+            <p>1. 系统随机生成一个2-3字的汉字词语作为起始词</p>
+            <p>2. 你需要输入一个新词语，要求第一个字与上一个词语的最后一个字一致</p>
+            <p>3. 每关有时间限制，超时或输入错误则游戏失败</p>
+            <p>4. 共10关，每晋级一关，时间减少0.5秒</p>
+            <button id="start-btn">开始游戏</button>
+        </div>
+
+        <!-- 游戏界面 -->
+        <div id="game-screen" class="hidden">
+            <h1>🎮 文字接龙</h1>
+            
+            <div class="game-info">
+                <div class="info-item">
+                    <span class="info-label">关卡</span>
+                    <span class="info-value" id="level">1</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">剩余时间</span>
+                    <span class="info-value timer" id="timer">10.0秒</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">接龙次数</span>
+                    <span class="info-value" id="score">0</span>
+                </div>
+            </div>
+
+            <div class="current-word">
+                <div class="word-label">当前词语</div>
+                <div class="word-text" id="current-word">
+                    <span id="word-content">准备中...</span>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <label class="input-label" for="user-input">
+                    请输入以 "<span id="last-char" class="last-char"></span>" 开头的词语：
+                </label>
+                <input type="text" id="user-input" placeholder="请输入词语..." autocomplete="off">
+                <div id="message" class="message"></div>
+            </div>
+
+            <div class="buttons">
+                <button id="submit-btn">提交</button>
+                <button id="give-up-btn">放弃游戏</button>
+                <button id="restart-btn">重新开始</button>
+            </div>
+        </div>
+
+        <!-- 游戏结束界面 -->
+        <div id="game-over-screen" class="hidden game-over">
+            <h2 id="game-over-title">游戏结束</h2>
+            <p id="game-over-message"></p>
+            <p id="final-score"></p>
+            <button id="play-again-btn">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 词语数据库 - 包含2-3字的常用汉字词语
+        const wordDatabase = [
+            // 2字词
+            "美好", "快乐", "幸福", "健康", "平安", "成功", "胜利", "希望", "梦想", "未来",
+            "今天", "明天", "昨天", "春天", "夏天", "秋天", "冬天", "白天", "黑夜", "阳光",
+            "月亮", "星星", "天空", "大地", "海洋", "河流", "山川", "森林", "草原", "沙漠",
+            "城市", "乡村", "学校", "家庭", "朋友", "亲人", "老师", "学生", "医生", "护士",
+            "工人", "农民", "商人", "作家", "画家", "歌手", "演员", "导演", "电影", "电视",
+            "音乐", "舞蹈", "绘画", "书法", "文学", "历史", "地理", "数学", "物理", "化学",
+            "生物", "科学", "技术", "电脑", "手机", "网络", "软件", "硬件", "数据", "信息",
+            "知识", "智慧", "思考", "学习", "工作", "生活", "运动", "旅行", "美食", "饮料",
+            "水果", "蔬菜", "米饭", "面条", "面包", "蛋糕", "咖啡", "茶水", "啤酒", "红酒",
+            "衣服", "裤子", "鞋子", "帽子", "眼镜", "手表", "手机", "电脑", "平板", "耳机",
+            "汽车", "火车", "飞机", "轮船", "自行车", "摩托车", "公交车", "出租车", "地铁", "高铁",
+            "公园", "花园", "动物园", "植物园", "博物馆", "图书馆", "体育馆", "电影院", "商场", "超市",
+            "银行", "医院", "学校", "公司", "工厂", "酒店", "饭店", "咖啡馆", "茶馆", "网吧",
+            
+            // 3字词
+            "办公室", "会议室", "卫生间", "休息室", "活动室", "实验室", "图书馆", "博物馆", "体育馆", "电影院",
+            "电视机", "电冰箱", "洗衣机", "空调机", "微波炉", "电饭煲", "电磁炉", "豆浆机", "榨汁机", "咖啡机",
+            "卫生间", "淋浴房", "洗脸盆", "抽水马", "淋浴房", "热水器", "浴霸", "换气扇", "毛巾架", "置物架",
+            "电视机", "机顶盒", "DVD机", "音响", "功放", "音箱", "麦克风", "耳机", "收音机", "录音机",
+            "自行车", "摩托车", "电动车", "三轮车", "四轮车", "小汽车", "公交车", "出租车", "地铁", "高铁",
+            "火车站", "汽车站", "地铁站", "机场", "港口", "码头", "加油站", "停车场", "修车厂", "洗车店",
+            "幼儿园", "小学", "中学", "高中", "大学", "研究生院", "博士生", "留学生", "交换生", "进修生",
+            "工程师", "设计师", "程序员", "分析师", "会计师", "律师", "医生", "护士", "教师", "教授",
+            "笔记本", "文件夹", "文具盒", "计算器", "订书机", "打孔机", "胶水", "胶带", "剪刀", "刀子",
+            "苹果汁", "橘子汁", "柠檬汁", "西瓜汁", "草莓汁", "芒果汁", "葡萄汁", "桃子汁", "梨子汁", "樱桃汁",
+            "牛肉面", "鸡肉面", "猪肉面", "羊肉面", "海鲜面", "蔬菜面", "鸡蛋面", "番茄面", "咖喱面", "炸酱面",
+            "蛋炒饭", "扬州炒", "牛肉炒", "鸡肉炒", "虾仁炒", "海鲜炒", "蔬菜炒", "酱油炒", "咖喱炒", "番茄炒",
+            "红烧肉", "糖醋排", "清蒸鱼", "红烧鱼", "糖醋鱼", "水煮鱼", "酸菜鱼", "烤鱼", "炖鱼", "煎鱼",
+            "西红柿", "马铃薯", "大白菜", "小白菜", "卷心菜", "菠菜", "芹菜", "韭菜", "香菜", "生菜",
+            "西瓜", "苹果", "香蕉", "橙子", "橘子", "柠檬", "葡萄", "草莓", "芒果", "樱桃",
+            "桃子", "梨子", "李子", "杏子", "枣子", "柿子", "柚子", "椰子", "榴莲", "火龙果",
+            "熊猫", "老虎", "狮子", "大象", "长颈鹿", "斑马", "犀牛", "河马", "鳄鱼", "鲨鱼",
+            "海豚", "鲸鱼", "企鹅", "北极熊", "棕熊", "黑熊", "猴子", "猩猩", "狒狒", "袋鼠",
+            "兔子", "松鼠", "老鼠", "仓鼠", "龙猫", "刺猬", "蝙蝠", "狐狸", "狼", "狗",
+            "猫", "猪", "牛", "羊", "马", "驴", "鹿", "骆驼", "牦牛", "山羊",
+            "天鹅", "孔雀", "鹦鹉", "鸽子", "老鹰", "猫头鹰", "啄木鸟", "燕子", "麻雀", "乌鸦",
+            "蜜蜂", "蝴蝶", "蜻蜓", "蚂蚁", "蜘蛛", "蚊子", "苍蝇", "蟑螂", "蝗虫", "蟋蟀",
+            "向日葵", "玫瑰", "月季", "牡丹", "菊花", "兰花", "梅花", "荷花", "桂花", "茶花",
+            "桃花", "梨花", "杏花", "樱花", "李花", "石榴花", "杜鹃花", "茉莉花", "栀子花", "水仙花",
+            "中国", "美国", "日本", "韩国", "英国", "法国", "德国", "意大利", "西班牙", "俄罗斯",
+            "加拿大", "澳大利亚", "巴西", "印度", "南非", "埃及", "尼日利亚", "墨西哥", "阿根廷", "土耳其",
+            "北京", "上海", "广州", "深圳", "杭州", "南京", "苏州", "成都", "重庆", "武汉",
+            "西安", "天津", "青岛", "大连", "宁波", "厦门", "珠海", "东莞", "佛山", "沈阳",
+            "长城", "故宫", "天坛", "颐和园", "圆明园", "鸟巢", "水立方", "东方明珠", "西湖", "太湖",
+            "黄山", "庐山", "泰山", "华山", "衡山", "恒山", "嵩山", "峨眉山", "五台山", "普陀山",
+            "长江", "黄河", "珠江", "淮河", "海河", "辽河", "黑龙江", "松花江", "珠江", "澜沧江",
+            "青海湖", "鄱阳湖", "洞庭湖", "太湖", "巢湖", "洪泽湖", "西湖", "千岛湖", "洱海", "滇池",
+            "太平洋", "大西洋", "印度洋", "北冰洋", "地中海", "红海", "黑海", "波罗的海", "北海", "南海",
+            "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日", "一月份", "二月份", "三月份",
+            "四月份", "五月份", "六月份", "七月份", "八月份", "九月份", "十月份", "十一月", "十二月", "春天", "夏天",
+            "秋天", "冬天", "早晨", "中午", "下午", "晚上", "凌晨", "黄昏", "傍晚", "深夜",
+            "新年", "春节", "元宵节", "清明节", "端午节", "中秋节", "重阳节", "国庆节", "劳动节", "儿童节",
+            "元旦", "情人节", "妇女节", "愚人节", "母亲节", "父亲节", "教师节", "万圣节", "感恩节", "圣诞节",
+            "高兴", "开心", "快乐", "愉快", "欢乐", "喜悦", "兴奋", "激动", "满足", "满意",
+            "伤心", "难过", "悲伤", "痛苦", "忧愁", "烦恼", "焦虑", "紧张", "害怕", "恐惧",
+            "生气", "愤怒", "恼火", "气愤", "讨厌", "厌恶", "喜欢", "热爱", "想念", "思念",
+            "希望", "期望", "盼望", "渴望", "失望", "绝望", "自信", "自卑", "骄傲", "谦虚",
+            "勇敢", "胆小", "诚实", "虚伪", "善良", "邪恶", "聪明", "愚蠢", "美丽", "丑陋",
+            "高大", "矮小", "强壮", "瘦弱", "肥胖", "苗条", "年轻", "年老", "漂亮", "帅气",
+            "干净", "肮脏", "整洁", "凌乱", "整齐", "混乱", "安静", "吵闹", "热闹", "冷清",
+            "明亮", "黑暗", "光明", "暗淡", "清晰", "模糊", "清楚", "糊涂", "明白", "不懂",
+            "容易", "困难", "简单", "复杂", "普通", "特别", "一般", "特殊", "正常", "异常",
+            "开始", "结束", "继续", "停止", "开始", "终止", "继续", "暂停", "前进", "后退",
+            "上升", "下降", "增加", "减少", "扩大", "缩小", "提高", "降低", "加快", "减慢",
+            "打开", "关闭", "开启", "关闭", "进来", "出去", "进去", "出来", "上来", "下去",
+            "过来", "过去", "回来", "回去", "起来", "坐下", "站立", "躺下", "睡觉", "醒来",
+            "吃饭", "喝水", "喝酒", "喝茶", "喝咖啡", "吃东西", "买东西", "卖东西", "送东西", "收东西",
+            "看书", "写字", "画画", "唱歌", "跳舞", "跑步", "游泳", "打球", "下棋", "打牌",
+            "开车", "骑车", "坐车", "走路", "跑步", "散步", "旅行", "旅游", "出差", "回家",
+            "上班", "下班", "上学", "放学", "开会", "散会", "上课", "下课", "考试", "放假",
+            "生日", "婚礼", "葬礼", "聚会", "派对", "庆祝", "祝贺", "祝福", "许愿", "祈祷",
+            "礼物", "奖品", "奖金", "红包", "礼金", "礼品", "赠品", "纪念品", "收藏品", "艺术品",
+            "小说", "散文", "诗歌", "剧本", "童话", "寓言", "神话", "历史", "传记", "自传",
+            "报纸", "杂志", "期刊", "图书", "书籍", "课本", "教材", "参考书", "工具书", "词典",
+            "电影", "电视剧", "动画片", "纪录片", "喜剧", "悲剧", "动作片", "爱情片", "科幻片", "恐怖片",
+            "音乐", "歌曲", "乐曲", "旋律", "节奏", "节拍", "音符", "乐谱", "乐器", "乐队",
+            "钢琴", "吉他", "小提琴", "大提琴", "鼓", "笛子", "箫", "笙", "筝", "二胡",
+            "美术", "绘画", "油画", "水彩画", "水墨画", "素描", "速写", "版画", "雕塑", "摄影",
+            "体育", "运动", "田径", "球类", "游泳", "体操", "武术", "拳击", "摔跤", "击剑",
+            "足球", "篮球", "排球", "网球", "乒乓球", "羽毛球", "高尔夫球", "棒球", "垒球", "橄榄球",
+            "游泳", "跳水", "水球", "花样游泳", "划船", "帆船", "帆板", "皮划艇", "赛艇", "水橇",
+            "体操", "艺术体操", "蹦床", "技巧", "健美操", "体育舞蹈", "武术", "散打", "跆拳道", "空手道",
+            "拳击", "摔跤", "柔道", "举重", "射击", "射箭", "击剑", "马术", "现代五项", "铁人三项",
+            "自行车", "摩托车", "赛车", "汽车", "卡丁车", "滑雪", "滑冰", "冰球", "冰壶", "雪橇",
+            "登山", "攀岩", "探险", "露营", "徒步", "越野", "马拉松", "竞走", "铁人三项", "现代五项",
+            "健康", "医疗", "医生", "护士", "医院", "诊所", "药店", "药品", "药物", "治疗",
+            "诊断", "检查", "体检", "化验", "手术", "打针", "吃药", "输液", "输血", "护理",
+            "感冒", "发烧", "咳嗽", "头痛", "胃痛", "腹痛", "腹泻", "呕吐", "失眠", "疲劳",
+            "高血压", "糖尿病", "心脏病", "癌症", "肿瘤", "炎症", "感染", "传染病", "慢性病", "急性病",
+            "预防", "保健", "养生", "营养", "饮食", "运动", "休息", "睡眠", "心情", "心态",
+            "教育", "学习", "学校", "老师", "学生", "课本", "教材", "课程", "考试", "作业",
+            "语文", "数学", "英语", "物理", "化学", "生物", "历史", "地理", "政治", "音乐",
+            "美术", "体育", "科学", "技术", "电脑", "编程", "网络", "软件", "硬件", "数据",
+            "阅读", "写作", "听写", "背诵", "记忆", "理解", "思考", "分析", "判断", "推理",
+            "工作", "职业", "事业", "公司", "企业", "单位", "部门", "职位", "职务", "职责",
+            "招聘", "应聘", "面试", "录用", "辞职", "退休", "工资", "薪水", "奖金", "福利",
+            "会议", "谈判", "合同", "协议", "项目", "计划", "任务", "目标", "进度", "效率",
+            "管理", "领导", "员工", "团队", "合作", "协调", "沟通", "交流", "反馈", "评估",
+            "商业", "贸易", "买卖", "交易", "市场", "价格", "价值", "成本", "利润", "收益",
+            "投资", "融资", "股票", "基金", "债券", "保险", "银行", "贷款", "存款", "利息",
+            "经济", "金融", "财政", "税收", "货币", "汇率", "通货膨胀", "通货紧缩", "经济危机", "经济复苏",
+            "法律", "法规", "制度", "规则", "条款", "合同", "协议", "权利", "义务", "责任",
+            "犯罪", "违法", "处罚", "惩罚", "赔偿", "补偿", "调解", "仲裁", "诉讼", "审判",
+            "政治", "政府", "国家", "社会", "制度", "体制", "政策", "法律", "法规", "条例",
+            "军事", "军队", "军人", "武器", "战争", "和平", "国防", "安全", "情报", "间谍",
+            "文化", "文明", "传统", "习俗", "习惯", "风俗", "节日", "庆典", "仪式", "礼节",
+            "宗教", "信仰", "神话", "传说", "迷信", "邪教", "宗教", "佛教", "道教", "伊斯兰教",
+            "基督教", "天主教", "新教", "东正教", "犹太教", "印度教", "佛教", "道教", "儒教", "神道教",
+            "哲学", "思想", "理论", "学说", "观点", "看法", "主义", "流派", "学派", "思潮",
+            "心理学", "行为", "意识", "思维", "情感", "情绪", "性格", "人格", "能力", "智力",
+            "记忆", "学习", "认知", "感知", "注意", "意识", "潜意识", "无意识", "梦境", "幻觉",
+            "艺术", "美学", "审美", "创造", "想象", "灵感", "天赋", "才华", "技巧", "技艺",
+            "语言", "文字", "词汇", "语法", "修辞", "逻辑", "语义", "语用", "语音", "语调",
+            "中文", "汉语", "普通话", "方言", "文言文", "白话文", "简体字", "繁体字", "拼音", "汉字",
+            "英语", "日语", "韩语", "法语", "德语", "俄语", "西班牙语", "阿拉伯语", "葡萄牙语", "意大利语",
+            "数字", "数学", "算术", "代数", "几何", "微积分", "统计", "概率", "逻辑", "集合",
+            "物理", "化学", "生物", "天文", "地理", "地质", "气象", "海洋", "环境", "生态",
+            "科学", "技术", "工程", "应用", "研究", "实验", "发明", "创造", "专利", "版权",
+            "电脑", "计算机", "硬件", "软件", "程序", "代码", "算法", "数据", "信息", "网络",
+            "互联网", "局域网", "广域网", "无线网", "有线网", "光纤", "宽带", "带宽", "流量", "网速",
+            "网站", "网页", "浏览器", "搜索引擎", "电子邮件", "即时通讯", "社交网络", "电子商务", "在线支付", "网络安全",
+            "病毒", "木马", "黑客", "防火墙", "加密", "解密", "备份", "恢复", "系统", "软件",
+            "操作系统", "Windows", "Linux", "MacOS", "Android", "iOS", "应用程序", "APP", "游戏", "工具",
+            "办公软件", "Word", "Excel", "PowerPoint", "Outlook", "PDF", "图片处理", "Photoshop", "视频处理", "音频处理",
+            "数据库", "SQL", "MySQL", "Oracle", "SQLServer", "MongoDB", "Redis", "编程语言", "Java", "Python", "C++",
+            "JavaScript", "PHP", "Ruby", "Go", "Swift", "Kotlin", "HTML", "CSS", "XML", "JSON",
+            "开发", "测试", "调试", "部署", "维护", "升级", "更新", "修复", "优化", "重构",
+            "需求", "设计", "实现", "测试", "发布", "运维", "文档", "注释", "版本", "配置",
+            "服务器", "客户端", "前端", "后端", "接口", "API", "SDK", "框架", "库", "组件",
+            "响应式", "自适应", "移动端", "PC端", "跨平台", "兼容性", "性能", "安全", "用户体验", "界面设计",
+            "UI", "UX", "交互", "视觉", "动效", "动画", "图标", "按钮", "菜单", "表单",
+            "颜色", "字体", "排版", "布局", "网格", "对齐", "间距", "边距", "内边距", "外边距",
+            "背景", "前景", "透明度", "阴影", "圆角", "边框", "渐变", "滤镜", "变换", "过渡",
+            "媒体查询", "响应式", "移动端优先", "桌面端优先", "流式布局", "弹性布局", "网格布局", "定位", "浮动", "清除浮动",
+            "选择器", "属性", "值", "优先级", "继承", "层叠", "盒模型", "标准盒模型", "怪异盒模型", "弹性盒模型",
+            "Flexbox", "Grid", "CSS3", "HTML5", "JavaScript", "ES6", "ES7", "ES8", "ES9", "ES10",
+            "变量", "常量", "数据类型", "字符串", "数字", "布尔值", "数组", "对象", "函数", "类",
+            "原型", "继承", "封装", "多态", "作用域", "闭包", "回调函数", "Promise", "async", "await",
+            "事件", "事件监听", "事件冒泡", "事件捕获", "事件委托", "DOM", "DOM操作", "DOM节点", "DOM元素", "DOM属性",
+            "BOM", "window", "document", "location", "history", "navigator", "screen", "定时器", "setTimeout", "setInterval",
+            "AJAX", "Fetch", "axios", "HTTP", "HTTPS", "GET", "POST", "PUT", "DELETE", "请求", "响应",
+            "状态码", "200", "404", "500", "请求头", "响应头", "请求体", "响应体", "参数", "查询字符串",
+            "Cookie", "Session", "Token", "JWT", "本地存储", "localStorage", "sessionStorage", "IndexedDB", "WebSQL", "缓存",
+            "Webpack", "Vite", "Rollup", "Parcel", "构建工具", "模块化", "CommonJS", "ES Modules", "AMD", "CMD",
+            "Vue", "React", "Angular", "Svelte", "jQuery", "Bootstrap", "ElementUI", "AntDesign", "TailwindCSS", "Sass",
+            "Less", "Stylus", "PostCSS", "TypeScript", "CoffeeScript", "Babel", "ESLint", "Prettier", "Jest", "Mocha",
+            "Chai", "Sinon", "Cypress", "Puppeteer", "Selenium", "测试", "单元测试", "集成测试", "端到端测试", "性能测试",
+            "安全测试", "压力测试", "负载测试", "并发测试", "兼容性测试", "回归测试", "冒烟测试", "验收测试", "白盒测试", "黑盒测试",
+            "Git", "GitHub", "GitLab", "Gitee", "版本控制", "仓库", "分支", "合并", "提交", "推送",
+            "拉取", "克隆", "fork", "pull", "push", "commit", "branch", "merge", "conflict", "resolve",
+            "Docker", "Kubernetes", "容器", "镜像", "虚拟机", "云服务", "AWS", "阿里云", "腾讯云", "华为云",
+            "CI/CD", "持续集成", "持续部署", "自动化", "脚本", "命令行", "终端", "控制台", "日志", "调试",
+            "错误", "异常", "Bug", "修复", "优化", "重构", "代码审查", "代码规范", "设计模式", "架构",
+            "性能优化", "代码优化", "数据库优化", "查询优化", "索引优化", "缓存优化", "网络优化", "加载优化", "渲染优化", "交互优化",
+            "安全优化", "XSS", "CSRF", "SQL注入", "DDoS", "防火墙", "加密", "解密", "认证", "授权",
+            "OAuth", "OpenID", "SSO", "JWT", "Token", "Session", "Cookie", "密码", "盐值", "哈希",
+            "MD5", "SHA", "RSA", "AES", "DES", "Base64", "URL编码", "HTML编码", "JSON", "XML",
+            "RESTful", "GraphQL", "SOAP", "RPC", "WebSocket", "HTTP", "HTTPS", "TCP", "UDP", "IP",
+            "DNS", "域名", "IP地址", "端口", "协议", "网关", "路由", "交换机", "路由器", "防火墙",
+            "服务器", "客户端", "浏览器", "HTTP客户端", "curl", "Postman", "Insomnia", "API测试", "接口测试",
+            "mock", "stub", "fake", "测试数据", "测试用例", "测试计划", "测试报告", "缺陷管理", "Bug追踪", "Jira",
+            "禅道", "Trello", "Notion", "文档", "wiki", "README", "CHANGELOG", "LICENSE", "CONTRIBUTING", "CODE_OF_CONDUCT",
+            "项目管理", "需求管理", "任务管理", "时间管理", "风险管理", "质量管理", "成本管理", "范围管理", "沟通管理", "干系人管理",
+            "敏捷开发", "Scrum", "Kanban", "XP", "迭代", "冲刺", "待办事项", "产品待办", "迭代待办", "燃尽图",
+            "产品经理", "项目经理", "技术经理", "架构师", "开发工程师", "测试工程师", "运维工程师", "UI设计师", "UX设计师", "产品设计师",
+            "全栈工程师", "前端工程师", "后端工程师", "移动端工程师", "数据库工程师", "安全工程师", "运维工程师", "DevOps工程师", "数据工程师", "算法工程师",
+            "人工智能", "机器学习", "深度学习", "神经网络", "自然语言处理", "计算机视觉", "语音识别", "图像识别", "推荐系统", "数据挖掘",
+            "大数据", "数据分析", "数据可视化", "数据仓库", "数据湖", "ETL", "BI", "报表", "仪表盘", "数据大屏",
+            "云计算", "边缘计算", "量子计算", "区块链", "物联网", "5G", "6G", "虚拟现实", "增强现实", "混合现实",
+            "元宇宙", "数字孪生", "数字经济", "数字政府", "数字社会", "数字生活", "数字化转型", "智能化升级", "自动化", "信息化",
+            "创新", "创业", "创造", "创意", "创新思维", "创业精神", "创造力", "想象力", "灵感", "天赋",
+            "机遇", "挑战", "竞争", "合作", "协作", "团队", "伙伴", "盟友", "对手", "敌人",
+            "成功", "失败", "胜利", "挫折", "困难", "问题", "解决", "克服", "坚持", "放弃",
+            "努力", "奋斗", "拼搏", "进取", "上进", "积极", "消极", "乐观", "悲观", "自信",
+            "自卑", "自尊", "自爱", "自强", "自立", "自主", "独立", "依赖", "自由", "束缚",
+            "梦想", "理想", "目标", "追求", "向往", "希望", "期望", "盼望", "渴望", "失望",
+            "绝望", "希望", "光明", "黑暗", "未来", "过去", "现在", "今天", "明天", "昨天",
+            "时间", "空间", "生命", "生活", "人生", "意义", "价值", "目的", "目标", "方向",
+            "道路", "路径", "选择", "决策", "决定", "犹豫", "果断", "谨慎", "鲁莽", "勇敢",
+            "胆小", "诚实", "虚伪", "真实", "虚假", "谎言", "真相", "事实", "假象", "幻觉",
+            "梦境", "现实", "虚拟", "模拟", "仿真", "复制", "克隆", "创新", "创造", "发明",
+            "发现", "探索", "冒险", "探险", "旅行", "旅游", "观光", "游览", "参观", "访问",
+            "回家", "离家", "出发", "到达", "启程", "归来", "离开", "留下", "等待", "期待",
+            "相逢", "相遇", "相识", "相知", "相爱", "相恋", "相思", "相见", "相别", "相离",
+            "友情", "爱情", "亲情", "恩情", "仇恨", "怨恨", "思念", "想念", "牵挂", "担心",
+            "关心", "爱护", "保护", "照顾", "帮助", "支持", "鼓励", "安慰", "陪伴", "守护",
+            "背叛", "欺骗", "伤害", "痛苦", "悲伤", "难过", "伤心", "流泪", "哭泣", "痛哭",
+            "欢笑", "微笑", "大笑", "苦笑", "嘲笑", "冷笑", "假笑", "真笑", "开心", "快乐",
+            "幸福", "痛苦", "快乐", "悲伤", "希望", "绝望", "光明", "黑暗", "正义", "邪恶",
+            "善良", "恶毒", "美丽", "丑陋", "高大", "矮小", "强壮", "瘦弱", "富有", "贫穷",
+            "聪明", "愚蠢", "智慧", "愚昧", "勇敢", "懦弱", "诚实", "虚伪", "真实", "虚假",
+            "成功", "失败", "胜利", "挫折", "开始", "结束", "继续", "停止", "前进", "后退",
+            "上升", "下降", "增加", "减少", "扩大", "缩小", "提高", "降低", "加快", "减慢",
+            "打开", "关闭", "开启", "关闭", "进来", "出去", "进去", "出来", "上来", "下去",
+            "过来", "过去", "回来", "回去", "起来", "坐下", "站立", "躺下", "睡觉", "醒来",
+            "活着", "死亡", "出生", "去世", "诞生", "逝世", "生存", "生活", "生命", "命运",
+            "运气", "机遇", "缘分", "巧合", "必然", "偶然", "因果", "原因", "结果", "影响",
+            "作用", "效果", "功能", "用途", "目的", "目标", "意义", "价值", "重要性", "必要性",
+            "可能性", "不可能性", "确定性", "不确定性", "风险", "安全", "危险", "稳定", "动荡",
+            "变化", "发展", "进步", "倒退", "进化", "退化", "成长", "成熟", "衰老", "腐朽",
+            "新", "旧", "年轻", "年老", "新鲜", "陈旧", "现代", "古代", "当代", "未来",
+            "过去", "现在", "今天", "明天", "昨天", "前天", "后天", "上周", "下周", "上月",
+            "下月", "去年", "今年", "明年", "明年", "后年", "前年", "世纪", "年代", "时代",
+            "时期", "阶段", "过程", "流程", "步骤", "环节", "程序", "顺序", "先后", "次序",
+            "第一", "第二", "第三", "第四", "第五", "第六", "第七", "第八", "第九", "第十",
+            "最后", "最终", "起初", "开始", "首先", "其次", "然后", "接着", "随后", "最后",
+            "终于", "终究", "毕竟", "到底", "究竟", "其实", "实际上", "事实上", "本质上", "根本上",
+            "基本", "主要", "重要", "次要", "必要", "必须", "需要", "需求", "要求", "期望",
+            "希望", "盼望", "渴望", "期望", "期待", "等待", "等候", "期盼", "企盼", "祈望",
+            "愿望", "心愿", "梦想", "理想", "目标", "目的", "计划", "打算", "方案", "策略",
+            "方法", "方式", "手段", "途径", "渠道", "路径", "道路", "方向", "目标", "终点",
+            "起点", "原点", "中心", "核心", "重点", "焦点", "热点", "难点", "关键点", "转折点",
+            "起点", "终点", "过程", "结果", "原因", "后果", "影响", "作用", "效果", "功能",
+            "用途", "目的", "目标", "意义", "价值", "重要性", "必要性", "可能性", "不可能性",
+            "确定性", "不确定性", "风险", "安全", "危险", "稳定", "动荡", "变化", "发展",
+            "进步", "倒退", "进化", "退化", "成长", "成熟", "衰老", "腐朽", "新", "旧",
+            "年轻", "年老", "新鲜", "陈旧", "现代", "古代", "当代", "未来", "过去", "现在"
+        ];
+
+        // 游戏状态变量
+        let currentWord = "";
+        let currentLevel = 1;
+        let score = 0;
+        let timeLeft = 10;
+        let timerInterval = null;
+        let gameActive = false;
+        let baseTime = 10;
+
+        // DOM元素
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const startBtn = document.getElementById('start-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const giveUpBtn = document.getElementById('give-up-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const userInput = document.getElementById('user-input');
+        const levelDisplay = document.getElementById('level');
+        const timerDisplay = document.getElementById('timer');
+        const scoreDisplay = document.getElementById('score');
+        const currentWordDisplay = document.getElementById('word-content');
+        const lastCharDisplay = document.getElementById('last-char');
+        const messageDisplay = document.getElementById('message');
+        const gameOverTitle = document.getElementById('game-over-title');
+        const gameOverMessage = document.getElementById('game-over-message');
+        const finalScore = document.getElementById('final-score');
+
+        // 初始化
+        function init() {
+            startBtn.addEventListener('click', startGame);
+            submitBtn.addEventListener('click', submitWord);
+            giveUpBtn.addEventListener('click', giveUp);
+            restartBtn.addEventListener('click', restartGame);
+            playAgainBtn.addEventListener('click', restartGame);
+            
+            // 回车键提交
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && gameActive) {
+                    submitWord();
+                }
+            });
+        }
+
+        // 开始游戏
+        function startGame() {
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameOverScreen.classList.add('hidden');
+            
+            currentLevel = 1;
+            score = 0;
+            baseTime = 10;
+            
+            updateLevelBackground();
+            generateRandomWord();
+            startTimer();
+            
+            gameActive = true;
+            userInput.focus();
+        }
+
+        // 生成随机词语
+        function generateRandomWord() {
+            const randomIndex = Math.floor(Math.random() * wordDatabase.length);
+            currentWord = wordDatabase[randomIndex];
+            updateWordDisplay();
+        }
+
+        // 更新词语显示
+        function updateWordDisplay() {
+            currentWordDisplay.textContent = currentWord;
+            lastCharDisplay.textContent = currentWord.charAt(currentWord.length - 1);
+            levelDisplay.textContent = currentLevel;
+            scoreDisplay.textContent = score;
+        }
+
+        // 更新关卡背景颜色
+        function updateLevelBackground() {
+            document.body.className = `level-${currentLevel}`;
+        }
+
+        // 开始计时器
+        function startTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            // 计算当前关卡时间：每关减少0.5秒
+            timeLeft = baseTime - (currentLevel - 1) * 0.5;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    timeUp();
+                }
+            }, 100);
+        }
+
+        // 更新计时器显示
+        function updateTimerDisplay() {
+            timerDisplay.textContent = timeLeft.toFixed(1) + '秒';
+            
+            // 时间少于3秒时变红
+            if (timeLeft < 3) {
+                timerDisplay.style.color = '#e74c3c';
+            } else {
+                timerDisplay.style.color = '#e74c3c';
+            }
+        }
+
+        // 时间到
+        function timeUp() {
+            clearInterval(timerInterval);
+            gameActive = false;
+            showMessage('时间到！接龙失败，请重新输入', 'error');
+            setTimeout(() => {
+                endGame(false);
+            }, 1500);
+        }
+
+        // 提交词语
+        function submitWord() {
+            if (!gameActive) return;
+            
+            const input = userInput.value.trim();
+            
+            // 验证输入
+            if (!input) {
+                showMessage('请输入词语！', 'error');
+                userInput.classList.add('error');
+                setTimeout(() => {
+                    userInput.classList.remove('error');
+                }, 1000);
+                return;
+            }
+            
+            // 验证是否为2-3字词语
+            if (input.length < 2 || input.length > 3) {
+                showMessage('请输入2-3字的词语！', 'error');
+                userInput.classList.add('error');
+                setTimeout(() => {
+                    userInput.classList.remove('error');
+                }, 1000);
+                return;
+            }
+            
+            // 验证首字是否匹配
+            const lastChar = currentWord.charAt(currentWord.length - 1);
+            const firstChar = input.charAt(0);
+            
+            if (firstChar !== lastChar) {
+                showMessage(`接龙失败！请输入以"${lastChar}"开头的词语`, 'error');
+                userInput.classList.add('error');
+                setTimeout(() => {
+                    userInput.classList.remove('error');
+                }, 1000);
+                return;
+            }
+            
+            // 验证词语是否在数据库中
+            if (!wordDatabase.includes(input)) {
+                showMessage('该词语不在词库中，请重新输入！', 'error');
+                userInput.classList.add('error');
+                setTimeout(() => {
+                    userInput.classList.remove('error');
+                }, 1000);
+                return;
+            }
+            
+            // 词语验证通过
+            score++;
+            currentWord = input;
+            userInput.value = '';
+            showMessage('接龙成功！继续加油！', 'success');
+            
+            // 检查是否需要升级关卡
+            if (score % 5 === 0) {
+                if (currentLevel < 10) {
+                    currentLevel++;
+                    updateLevelBackground();
+                    showMessage(`恭喜！升级到第${currentLevel}关！`, 'success');
+                } else if (currentLevel === 10) {
+                    // 已经是第10关，检查是否通关
+                    if (score >= 50) {
+                        clearInterval(timerInterval);
+                        endGame(true);
+                        return;
+                    }
+                }
+            }
+            
+            updateWordDisplay();
+            startTimer();
+            userInput.focus();
+        }
+
+        // 显示消息
+        function showMessage(text, type) {
+            messageDisplay.textContent = text;
+            messageDisplay.className = 'message ' + type;
+            
+            setTimeout(() => {
+                messageDisplay.className = 'message';
+                messageDisplay.style.display = 'none';
+            }, 2000);
+        }
+
+        // 放弃游戏
+        function giveUp() {
+            if (!gameActive) return;
+            
+            clearInterval(timerInterval);
+            gameActive = false;
+            endGame(false);
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            gameActive = false;
+            messageDisplay.className = 'message';
+            messageDisplay.style.display = 'none';
+            userInput.value = '';
+            
+            startGame();
+        }
+
+        // 结束游戏
+        function endGame(isWin) {
+            clearInterval(timerInterval);
+            gameActive = false;
+            
+            gameScreen.classList.add('hidden');
+            gameOverScreen.classList.remove('hidden');
+            
+            if (isWin) {
+                gameOverScreen.classList.add('success');
+                gameOverTitle.textContent = '🎉 恭喜通关！';
+                gameOverMessage.textContent = '你已经完成了全部10关！真是太厉害了！';
+            } else {
+                gameOverScreen.classList.remove('success');
+                gameOverTitle.textContent = '😢 游戏结束';
+                gameOverMessage.textContent = '不要灰心，再试一次吧！';
+            }
+            
+            finalScore.textContent = `最终成绩：第${currentLevel}关，成功接龙${score}次`;
+        }
+
+        // 初始化游戏
+        init();
+    </script>
+</body>
+</html>
